@@ -1,0 +1,65 @@
+import pandas as pd
+from fpdf import FPDF
+
+# Step 1: Load the data from a CSV file
+data = pd.read_csv('sample_data.csv')  # Replace with your actual CSV file path
+
+# Step 2: Analyze the data (Example: Calculate summary statistics)
+average_sales = data['Sales'].mean()
+total_sales = data['Sales'].sum()
+max_sales = data['Sales'].max()
+
+# Step 3: Create the PDF Report using FPDF
+
+class PDF(FPDF):
+    def header(self):
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, 'Automated Report', 0, 1, 'C')
+
+    def chapter_title(self, title):
+        self.set_font('Arial', 'B', 12)
+        self.cell(0, 10, title, 0, 1, 'L')
+
+    def chapter_body(self, body):
+        self.set_font('Arial', '', 12)
+        self.multi_cell(0, 10, body)
+
+    def chapter_table(self, data):
+        self.set_font('Arial', 'B', 12)
+        self.cell(40, 10, 'Date', 1)
+        self.cell(40, 10, 'Sales', 1)
+        self.ln()
+
+        self.set_font('Arial', '', 12)
+        for row in data:
+            self.cell(40, 10, row['Date'], 1)
+            self.cell(40, 10, str(row['Sales']), 1)
+            self.ln()
+
+# Create a PDF instance
+pdf = PDF()
+pdf.add_page()
+
+# Add Report Title
+pdf.chapter_title('Sales Summary Report')
+
+# Add General Statistics to the Report
+summary_text = (
+    f"Average Sales: {average_sales:.2f}\n"
+    f"Total Sales: {total_sales:.2f}\n"
+    f"Maximum Sales: {max_sales:.2f}"
+)
+pdf.chapter_body(summary_text)
+
+# Add Sales Data Table to the Report
+pdf.chapter_title('Sales Data')
+
+# Convert the data to a list of dictionaries for the table
+sales_data = data[['Date', 'Sales']].to_dict(orient='records')
+pdf.chapter_table(sales_data)
+
+# Output the PDF to a file
+pdf.output('Sales_Report.pdf')
+
+# Print confirmation
+print("Report has been generated successfully as 'Sales_Report.pdf'.")
