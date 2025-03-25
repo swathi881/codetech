@@ -1,0 +1,78 @@
+# Importing necessary libraries
+import pandas as pd
+import numpy as np
+import nltk
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
+
+# Download necessary NLTK datasets (optional if you don't have them already)
+nltk.download('stopwords')
+nltk.download('punkt')
+
+# Load the dataset
+# You can use your own dataset. Here we load a simple spam dataset (this can be a CSV file with 'text' and 'label' columns).
+# For example, using a popular dataset available in sklearn.
+from sklearn.datasets import fetch_20newsgroups
+newsgroups = fetch_20newsgroups(subset='train', categories=['soc.religion.christian', 'sci.space'], remove=('headers', 'footers', 'quotes'))
+
+# We simulate a 'spam' and 'ham' classification from the newsgroup dataset (spam is category 1, ham is category 0)
+data = pd.DataFrame({
+    'text': newsgroups.data,
+    'label': newsgroups.target
+})
+
+# Check the data
+data.head()
+
+# Preprocessing text data: remove stopwords, tokenize, and vectorize using TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+
+# Initialize a TfidfVectorizer for text data conversion
+vectorizer = TfidfVectorizer(stop_words='english', max_features=5000)
+
+# Fit and transform the text data into numerical features
+X = vectorizer.fit_transform(data['text'])
+y = data['label']
+
+# Split the data into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train a Naive Bayes model for classification
+model = MultinomialNB()
+model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = model.predict(X_test)
+
+# Evaluate the model
+accuracy = accuracy_score(y_test, y_pred)
+precision = precision_score(y_test, y_pred)
+recall = recall_score(y_test, y_pred)
+f1 = f1_score(y_test, y_pred)
+
+# Display evaluation metrics
+print(f"Accuracy: {accuracy:.4f}")
+print(f"Precision: {precision:.4f}")
+print(f"Recall: {recall:.4f}")
+print(f"F1 Score: {f1:.4f}")
+
+# Display confusion matrix
+cm = confusion_matrix(y_test, y_pred)
+print("Confusion Matrix:")
+print(cm)
+
+# Save the model if necessary (optional)
+import joblib
+joblib.dump(model, 'spam_classifier_model.pkl')
+
+# You can also visualize the confusion matrix using heatmap (optional)
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Ham', 'Spam'], yticklabels=['Ham', 'Spam'])
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
