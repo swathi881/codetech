@@ -1,0 +1,58 @@
+import nltk
+import random
+import spacy
+from nltk.chat.util import Chat, reflections
+
+# Load SpaCy's English model
+nlp = spacy.load('en_core_web_sm')
+
+# NLTK's chatbot patterns and responses
+patterns = [
+    (r'Hi|Hello|Hey', ['Hello!', 'Hi there!', 'Greetings!']),
+    (r'How are you?', ['I am doing well, thank you for asking!', 'I am good, how about you?']),
+    (r'What is your name?', ['I am a chatbot created using NLP!', 'I don\'t have a name, but you can call me Chatbot.']),
+    (r'What can you do?', ['I can chat with you, answer questions, and help with various tasks.']),
+    (r'Bye|Goodbye', ['Goodbye!', 'See you later!', 'Take care!']),
+    (r'(.*) your favorite (.*)', ['I don\'t have favorites, but I like to talk about anything!']),
+    (r'What is (.*)', ['I\'m not sure about that, but I can help with more information on the topic!']),
+]
+
+# Initialize the chatbot with NLTK's Chat class
+chatbot = Chat(patterns, reflections)
+
+# Function to process user input with SpaCy
+def process_input(user_input):
+    # Use SpaCy for basic NLP processing
+    doc = nlp(user_input)
+    
+    # Extract named entities
+    entities = [(ent.text, ent.label_) for ent in doc.ents]
+    
+    # For example, just extracting the named entities
+    return entities
+
+# Chatbot conversation loop
+def start_chat():
+    print("Hello, I'm your NLP-based chatbot. Type 'exit' to end the chat.\n")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() == 'exit':
+            print("Goodbye!")
+            break
+        
+        # Process user input
+        entities = process_input(user_input)
+        if entities:
+            print("I noticed these entities in your query:", entities)
+        
+        # Generate a response using NLTK's chatbot
+        response = chatbot.respond(user_input)
+        
+        if not response:
+            response = "I'm sorry, I didn't quite understand that. Could you please rephrase?"
+        
+        print(f"Chatbot: {response}")
+
+# Start the chatbot
+if __name__ == "__main__":
+    start_chat()
