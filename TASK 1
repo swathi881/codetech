@@ -1,0 +1,59 @@
+import requests
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+
+# Step 1: Get the OpenWeatherMap API key (replace with your own)
+API_KEY = 'YOUR_API_KEY'  # Replace with your OpenWeatherMap API key
+CITY = 'London'  # Example city, replace with your preferred city
+URL = f'http://api.openweathermap.org/data/2.5/forecast?q={CITY}&units=metric&cnt=10&appid={API_KEY}'
+
+# Step 2: Fetch data from the API
+response = requests.get(URL)
+data = response.json()
+
+# Step 3: Extract relevant data from the API response
+dates = []
+temperatures = []
+humidity = []
+
+for entry in data['list']:
+    dates.append(entry['dt_txt'])
+    temperatures.append(entry['main']['temp'])
+    humidity.append(entry['main']['humidity'])
+
+# Step 4: Create a DataFrame from the data
+weather_data = pd.DataFrame({
+    'Date': pd.to_datetime(dates),
+    'Temperature (°C)': temperatures,
+    'Humidity (%)': humidity
+})
+
+# Step 5: Visualize the data using Seaborn and Matplotlib
+
+# Create subplots
+fig, ax = plt.subplots(2, 1, figsize=(10, 8))
+
+# Temperature Visualization
+sns.lineplot(x='Date', y='Temperature (°C)', data=weather_data, ax=ax[0], marker='o')
+ax[0].set_title(f'Temperature Trend in {CITY}')
+ax[0].set_xlabel('Date')
+ax[0].set_ylabel('Temperature (°C)')
+
+# Humidity Visualization
+sns.lineplot(x='Date', y='Humidity (%)', data=weather_data, ax=ax[1], marker='o', color='orange')
+ax[1].set_title(f'Humidity Trend in {CITY}')
+ax[1].set_xlabel('Date')
+ax[1].set_ylabel('Humidity (%)')
+
+# Adjust layout
+plt.tight_layout()
+
+# Show the plot
+plt.show()
+
+# Save the plot as an image file
+fig.savefig(f'{CITY}_weather_dashboard.png')
+
+# Output the weather data to verify
+print(weather_data)
